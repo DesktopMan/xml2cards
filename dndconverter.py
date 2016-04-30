@@ -31,27 +31,29 @@ def get_type_info(itemType):
     return {'name': 'Unknown type', 'icon': 'cross-mark', 'color': 'black'}
 
 
-class Item:
-    properties = [
-        'name',
-        'type',
-        # 'weight',
-        'ac',
-        'stealth'
-        'dmg1',
-        'dmg2',
-        'dmgType',
-        'property',
-        'range',
-        'text',
-        'modifier',
-        'roll',
-        'value'
-    ]
+def get_item_properties():
+    return {
+        'name': 'name',
+        'type': 'type',
+        'weight': 'weight',
+        'ac': 'ac',
+        'stealth': 'stealth',
+        'dmg1': 'dmg',
+        'dmg2': 'dmg',
+        'dmgType': 'type',
+        'property': 'prop',
+        'range': 'range',
+        'text': 'text',
+        'modifier': 'mod',
+        'roll': 'roll',
+        'value': 'value'
+    }
 
+
+class Item:
     def __init__(self):
-        for p in self.properties:
-            setattr(self, p, "")
+        for p in get_item_properties():
+            setattr(self, p[0], "")
 
 
 def load_items(filename):
@@ -62,14 +64,13 @@ def load_items(filename):
             continue
 
         item = Item()
-        for p in Item.properties:
-
+        for propName in get_item_properties():
             # Convert tags to newlines
-            for t in e.findall(p):
+            for t in e.findall(propName):
                 if not t.text:
                     t.text = ""
 
-            setattr(item, p, '\n'.join([t.text for t in e.findall(p)]))
+            setattr(item, propName, '\n'.join([t.text for t in e.findall(propName)]))
 
         items.append(item)
 
@@ -99,14 +100,14 @@ def convert_item(item, dic):
 
     properties_added = 0
 
-    for prop in item.properties:
-        value = getattr(item, prop)
+    for propName, propDisplay in get_item_properties().items():
+        propValue = getattr(item, propName)
 
-        if prop == 'name' or prop == 'type' or prop == 'text' or value == '' or value == '0':
+        if propName == 'name' or propName == 'type' or propName == 'text' or propValue == '' or propValue == 0:
             continue
 
-        for v in value.split('\n'):
-            result['contents'].append('property | %s | %s' % (prop, v))
+        for v in propValue.split('\n'):
+            result['contents'].append('property | %s | %s' % (propDisplay, v))
             properties_added += 1
 
     if properties_added > 0:
