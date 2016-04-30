@@ -54,30 +54,31 @@ class Item:
             setattr(self, p, "")
 
 
-def load_items(filename, filter = []):
+def load_items(filename):
     items = []
 
     for e in et.parse(filename).getroot():
-        if e.tag == 'item':
-            item = Item()
-            for p in Item.properties:
+        if e.tag != 'item':
+            continue
 
-                # Convert tags to newlines
-                for t in e.findall(p):
-                    if not t.text:
-                        t.text = ""
+        item = Item()
+        for p in Item.properties:
 
-                setattr(item, p, '\n'.join([t.text for t in e.findall(p)]))
+            # Convert tags to newlines
+            for t in e.findall(p):
+                if not t.text:
+                    t.text = ""
 
-            if len(filter) == 0 or item.name in filter:
-                items.append(item)
+            setattr(item, p, '\n'.join([t.text for t in e.findall(p)]))
+
+        items.append(item)
 
     return items
 
 
 def convert_item(item, dic):
     result = {}
-    info = get_type_info(item.type)
+    type_info = get_type_info(item.type)
 
     # Basic info
     if item.type == '$':
@@ -86,14 +87,13 @@ def convert_item(item, dic):
     else:
         result['title'] = item.name
 
-    result['color'] = info['color']
-    result['icon'] = info['icon']
-    result['icon_back'] = info['icon']
-    result['count'] = 1
+    result['color'] = type_info['color']
+    result['icon'] = type_info['icon']
+    result['icon_back'] = type_info['icon']
 
     # Properties
     result['contents'] = []
-    result['contents'].append('subtitle | %s' % info['name'])
+    result['contents'].append('subtitle | %s' % type_info['name'])
 
     result['contents'].append('rule')
 
@@ -113,6 +113,8 @@ def convert_item(item, dic):
         result['contents'].append('rule')
 
     # Text
+    previous_justify = False
+
     for line in item.text.split('\n'):
         line = line.strip()
 
@@ -121,28 +123,48 @@ def convert_item(item, dic):
         elif line.startswith("Source:"):
             result['contents'].append('fill')
             result['contents'].append('rule')
+
             line = line.replace('Source: ', '')
+
             result['contents'].append('center | %s' % line)
+
+            previous_justify = False
         else:
+            if not previous_justify:
+                result['contents'].append('\n')
             result['contents'].append('justify | %s\n' % ' '.join([dic.inserted(w, '\u00ad') for w in line.split(' ')]))
+            previous_justify = True
 
     # Tags
-    result['tags'] = [info['name'].lower()]
+    result['tags'] = [type_info['name'].lower()]
 
     return result
 
 
-def convert_items(items):
+def convert_items(items, filter):
     dic = pyphen.Pyphen(lang='en_US')
     result = []
 
     for item in items:
-        result.append(convert_item(item, dic))
+        count = filter.count(item.name)
+
+        if count == 0:
+            continue
+
+        item = convert_item(item, dic)
+        item['count'] = count
+        result.append(item)
 
     return result
 
 if __name__ == '__main__':
-    items = load_items('items.xml', sys.argv[1:])
-    converted = convert_items(items)
+    filename = sys.argv[1]
 
-    print(json.dumps(converted, indent=2))
+    filter = sys.argv[2:]
+    filter.extend(sys.stdin.read().splitlines())
+
+    items = load_items('items.xml')
+    converted = convert_items(items, filter)
+
+    with open(filename, 'w') as f:
+        f.write(json.dumps(converted, indent=2))
