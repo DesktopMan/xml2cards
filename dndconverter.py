@@ -156,7 +156,16 @@ def convert_items(items, filter):
         item['count'] = count
         result.append(item)
 
-    return result
+    found = []
+    for item in result:
+        found.append(item['title'])
+
+    missing = []
+    for item in filter:
+        if item not in found and item != '' and not item.startswith('#'):
+            missing.append(item)
+
+    return result, missing
 
 if __name__ == '__main__':
     filename = sys.argv[1]
@@ -165,7 +174,12 @@ if __name__ == '__main__':
     filter.extend(sys.stdin.read().splitlines())
 
     items = load_items('items.xml')
-    converted = convert_items(items, filter)
+    converted, missing = convert_items(items, filter)
+
+    if len(missing) > 0:
+        print('Missing items:\n%s' % '\n'.join(missing))
+
+    print('Done.')
 
     with open(filename, 'w') as f:
         f.write(json.dumps(converted, indent=2))
