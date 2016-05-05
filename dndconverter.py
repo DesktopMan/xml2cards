@@ -114,8 +114,6 @@ def convert_item(item, dic):
         result['contents'].append('rule')
 
     # Text
-    previous_justify = False
-
     for line in item.text.split('\n'):
         line = line.strip()
 
@@ -128,13 +126,8 @@ def convert_item(item, dic):
             line = line.replace('Source: ', '')
 
             result['contents'].append('center | %s' % line)
-
-            previous_justify = False
         else:
-            if not previous_justify:
-                result['contents'].append('\n')
             result['contents'].append('justify | %s\n' % ' '.join([dic.inserted(w, '\u00ad') for w in line.split(' ')]))
-            previous_justify = True
 
     # Tags
     result['tags'] = [type_info['name'].lower()]
