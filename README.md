@@ -38,7 +38,6 @@ If you want to exclude one or more properties you can do that with the --exclude
 * modifier
 * property
 * range
-* rarity
 * roll
 * stealth
 * value
