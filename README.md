@@ -20,12 +20,18 @@ The Python module *pyphen* is used for hyphenation.
 
 # Example filter.txt
 
-You can add multiples of an item by writing the count first.
+You can add multiples of an item by writing the count first. Lines starting with # will be ignored.
 
 ```
-Bag of Holding
+# Valuables
 3 Malachite
+
+# Items
+Bag of Holding
 Ring of Regeneration
+# Herbalism Kit
 5 Potion of Healing
+
+# Weapons
 Warhammer +1
 ```
