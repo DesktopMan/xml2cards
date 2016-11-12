@@ -124,6 +124,8 @@ def convert_item(item, dic):
 
         if line == '':
             continue
+        elif line.startswith("Rarity:"):
+            continue
         elif line.startswith("Source:"):
             result['contents'].append('fill')
             result['contents'].append('rule')
