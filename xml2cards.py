@@ -44,7 +44,7 @@ def get_item_properties():
         'dmg1': 'Damage',
         'dmg2': 'Damage',
         'dmgType': 'Type',
-        'property': 'Property',
+        'property': 'Properties',
         'range': 'Range',
         'text': 'Text',
         'modifier': 'Modifier',
@@ -170,9 +170,14 @@ def convert_item(item, dic, exclude_properties):
     for line in item.text.split('\n'):
         line = line.strip()
 
+        properties = [
+            'Ammunition:', 'Finesse:', 'Heavy:', 'Light:', 'Loading:', 'Range:', 'Rarity:', 'Special:', 'Thrown:',
+            'Two-Handed:', 'Versatile:'
+        ]
+
         if line == '':
             continue
-        elif line.startswith("Rarity:"):
+        elif line.split()[0] in properties:
             continue
         elif line.startswith("Source:"):
             result['contents'].append('fill')
