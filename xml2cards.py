@@ -162,6 +162,10 @@ def convert_items(items, name_filter):
 
 
 def main():
+    if len(sys.argv) != 4:
+        print('Usage: xml2cards.py <items.xml>', '<items.txt>', '<output.json>')
+        exit(0)
+
     xml_file = sys.argv[1]
     filter_file = sys.argv[2]
     json_file = sys.argv[3]
