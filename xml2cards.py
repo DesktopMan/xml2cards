@@ -58,7 +58,7 @@ class Item:
 
 
 def load_items(filename):
-    items = []
+    items = {}
 
     for e in ElementTree.parse(filename).getroot():
         if e.tag != 'item':
@@ -73,23 +73,21 @@ def load_items(filename):
 
             setattr(item, prop_name, '\n'.join([t.text for t in e.findall(prop_name)]))
 
-        items.append(item)
+        # Remove value from the name of valuables
+        if item.type == '$':
+            item.name = item.name[item.name.find(' - ') + 3:]
+
+        items[item.name.lower()] = item
 
     return items
 
 
 def convert_item(item, dic):
     result = {}
-    result['original_title'] = item.name
 
     type_info = get_type_info(item.type)
 
-    # Basic info
-    if item.type == '$':
-        result['title'] = item.name[item.name.find(' - ') + 3:]
-    else:
-        result['title'] = item.name
-
+    result['title'] = item.name
     result['color'] = type_info['color']
     result['icon'] = type_info['icon']
     result['icon_back'] = type_info['icon']
@@ -141,35 +139,37 @@ def convert_item(item, dic):
     return result
 
 
-def convert_items(items, name_filter):
+def convert_items(items, items_wanted):
     dic = pyphen.Pyphen(lang='en_US')
     result = []
+    missing = []
 
-    for item in items:
-        count = name_filter.count(item.name)
-
-        if count == 0:
+    for wanted in items_wanted:
+        if not wanted or wanted.startswith('#'):  # Empty line or commented out
             continue
 
-        item = convert_item(item, dic)
+        count = wanted.split()
+        if count[0].isdigit():
+            wanted = ' '.join(count[1:])
+            count = int(count[0])
+        else:
+            count = 1
+
+        # Item was not found
+        if not wanted.lower() in items:
+            missing.append(wanted)
+            continue
+
+        item = convert_item(items[wanted.lower()], dic)
         item['count'] = count
         result.append(item)
-
-    found = []
-    for item in result:
-        found.append(item['original_title'])
-
-    missing = []
-    for item in name_filter:
-        if item not in found and item != '' and not item.startswith('#'):
-            missing.append(item)
 
     return result, missing
 
 
 def main():
     if len(sys.argv) != 4:
-        print('Usage: xml2cards.py <items.xml>', '<items.txt>', '<output.json>')
+        print('Usage: xml2cards.py <items.xml>', '<filter.txt>', '<output.json>')
         exit(0)
 
     xml_file = sys.argv[1]
@@ -186,10 +186,10 @@ def main():
     if len(missing) > 0:
         print('Missing items:\n%s' % '\n'.join(missing))
 
-    print('Done.')
-
     with open(json_file, 'w') as f:
         f.write(json.dumps(converted, indent=2))
+
+    print('Done. Wrote %d items to \'%s\' JSON file.' % (len(converted), json_file))
 
 if __name__ == '__main__':
     main()

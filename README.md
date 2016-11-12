@@ -14,6 +14,18 @@ The Python module *pyphen* is used for hyphenation.
 1. Type in the items your group has in a text file (one per line)
 2. Run the script:
    ```
-   ./xml2cards.py items.xml party.txt output.json
+   ./xml2cards.py items.xml filter.txt output.json
    ```
 3. Open the JSON file in RPG cards and edit as you see fit
+
+# Example filter.txt
+
+You can add multiples of an item by writing the count first.
+
+```
+Bag of Holding
+3 Malachite
+Ring of Regeneration
+5 Potion of Healing
+Warhammer +1
+```
