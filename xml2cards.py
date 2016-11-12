@@ -130,8 +130,10 @@ def convert_item(item, dic, exclude_properties):
         prop_value = getattr(item, prop_name)
 
         # Skip properties already displayed elsewhere and excluded properties
-        exclude_properties.extend(['name', 'type', 'text', 'rarity'])
-        if prop_name in exclude_properties or prop_value in ['', '0', 0]:
+        ignored_properties = ['name', 'type', 'text', 'rarity']
+        if exclude_properties:
+            ignored_properties.extend(exclude_properties)
+        if prop_name in ignored_properties or prop_value in ['', '0', 0]:
             continue
 
         for v in prop_value.split('\n'):
