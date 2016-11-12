@@ -80,6 +80,8 @@ def load_items(filename):
 
 def convert_item(item, dic):
     result = {}
+    result['original_title'] = item.name
+
     type_info = get_type_info(item.type)
 
     # Basic info
@@ -155,7 +157,7 @@ def convert_items(items, name_filter):
 
     found = []
     for item in result:
-        found.append(item['title'])
+        found.append(item['original_title'])
 
     missing = []
     for item in name_filter:
