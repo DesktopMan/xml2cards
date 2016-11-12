@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import os
 import sys
 from xml.etree import ElementTree
 import json
@@ -168,13 +169,25 @@ def convert_items(items, items_wanted):
 
 
 def main():
+    print('--------------------------')
+    print('XML to RPG cards converter')
+    print('--------------------------\n')
+
     if len(sys.argv) != 4:
-        print('Usage: xml2cards.py <items.xml>', '<filter.txt>', '<output.json>')
+        print('Usage: xml2cards.py <items.xml>', '<filter.txt>', '<output.json>\n')
         exit(0)
 
     xml_file = sys.argv[1]
     filter_file = sys.argv[2]
     json_file = sys.argv[3]
+
+    if not os.path.isfile(xml_file):
+        print('Error: \'%s\' is not a file.\n' % xml_file)
+        exit(1)
+
+    if not os.path.isfile(filter_file):
+        print('Error: \'%s\' is not a file.\n' % filter_file)
+        exit(1)
 
     name_filter = []
     with open(filter_file, 'r') as f:
