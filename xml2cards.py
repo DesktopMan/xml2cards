@@ -54,6 +54,26 @@ def get_item_properties():
     }
 
 
+def get_icon_override(name):
+    overrides = {
+        'Belt of': 'belt',
+        'Book of': 'book-cover',
+        'Boots of': 'boots',
+        'Bracers of': 'bracer',
+        'Cloak of': 'cloak',
+        'Gloves of': 'hand',
+        'Helm of': 'crested-helmet',
+        'Horn of': 'hunting-horn',
+        'Tome of': 'book-cover'
+    }
+
+    for key, value in overrides.items():
+        if name.startswith(key):
+            return value
+
+    return None
+
+
 class Item:
     def __init__(self):
         for p in get_item_properties():
@@ -92,8 +112,8 @@ def convert_item(item, dic, exclude_properties):
 
     result['title'] = item.name
     result['color'] = type_info['color']
-    result['icon'] = type_info['icon']
-    result['icon_back'] = type_info['icon']
+    icon = get_icon_override(item.name)
+    result['icon'] = icon if icon else type_info['icon']
 
     # Properties
     result['contents'] = []
