@@ -12,12 +12,45 @@ The Python module *pyphen* is used for hyphenation.
 
 # Usage
 
+## Convert
+
 1. Type in the items your group has in a text file (one per line)
+
 2. Run the script:
    ```
-   ./xml2cards.py items.xml filter.txt output.json
+   ./xml2cards.py convert items.xml filter.txt output.json
    ```
+
 3. Load the JSON file in RPG cards and edit as you see fit
+
+### Excluding properties
+
+If you want to exclude one or more properties you can do that with the --exclude option:
+
+```
+./xml2cards.py convert items.xml filter.txt output.json --exclude weight
+```
+
+* ac
+* dmg1
+* dmg2
+* dmgType
+* modifier
+* property
+* range
+* rarity
+* roll
+* stealth
+* value
+* weight
+
+## Search
+
+You can also search for items. This matches text anywhere in the name and displays the item description:
+
+```
+./xml2cards.py search items.xml potion
+```
 
 # Example filter.txt
 

@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 import os
 import sys
+import collections
 from xml.etree import ElementTree
+import argparse
 import json
 import pyphen
 
@@ -59,7 +61,7 @@ class Item:
 
 
 def load_items(filename):
-    items = {}
+    items = collections.OrderedDict()
 
     for e in ElementTree.parse(filename).getroot():
         if e.tag != 'item':
@@ -83,7 +85,7 @@ def load_items(filename):
     return items
 
 
-def convert_item(item, dic):
+def convert_item(item, dic, exclude_properties):
     result = {}
 
     type_info = get_type_info(item.type)
@@ -107,8 +109,9 @@ def convert_item(item, dic):
     for prop_name, prop_display in get_item_properties().items():
         prop_value = getattr(item, prop_name)
 
-        # Skip properties already displayed elsewhere
-        if prop_name in ['name', 'type', 'text', 'rarity'] or prop_value in ['', '0', 0]:
+        # Skip properties already displayed elsewhere and excluded properties
+        exclude_properties.extend(['name', 'type', 'text', 'rarity'])
+        if prop_name in exclude_properties or prop_value in ['', '0', 0]:
             continue
 
         for v in prop_value.split('\n'):
@@ -142,7 +145,7 @@ def convert_item(item, dic):
     return result
 
 
-def convert_items(items, items_wanted):
+def convert_items(items, items_wanted, exclude_properties):
     dic = pyphen.Pyphen(lang='en_US')
     result = []
     missing = []
@@ -163,48 +166,80 @@ def convert_items(items, items_wanted):
             missing.append(wanted)
             continue
 
-        item = convert_item(items[wanted.lower()], dic)
+        item = convert_item(items[wanted.lower()], dic, exclude_properties)
         item['count'] = count
         result.append(item)
 
     return result, missing
 
 
-def main():
-    print('--------------------------')
-    print('XML to RPG cards converter')
-    print('--------------------------\n')
-
-    if len(sys.argv) != 4:
-        print('Usage: xml2cards.py <items.xml>', '<filter.txt>', '<output.json>\n')
-        exit(0)
-
-    xml_file = sys.argv[1]
-    filter_file = sys.argv[2]
-    json_file = sys.argv[3]
-
-    if not os.path.isfile(xml_file):
-        print('Error: \'%s\' is not a file.\n' % xml_file)
-        exit(1)
-
-    if not os.path.isfile(filter_file):
-        print('Error: \'%s\' is not a file.\n' % filter_file)
+def convert(args, items):
+    if not os.path.isfile(args.filter_file):
+        print('Error: \'%s\' is not a file.\n' % args.filter_file)
         exit(1)
 
     name_filter = []
-    with open(filter_file, 'r') as f:
+    with open(args.filter_file, 'r') as f:
         name_filter.extend(f.read().splitlines())
 
-    items = load_items(xml_file)
-    converted, missing = convert_items(items, name_filter)
+    converted, missing = convert_items(items, name_filter, args.exclude)
 
     if len(missing) > 0:
         print('Missing items:\n%s' % '\n'.join(missing))
 
-    with open(json_file, 'w') as f:
+    with open(args.output_file, 'w') as f:
         f.write(json.dumps(converted, indent=2))
 
-    print('Done. Wrote %d items to \'%s\' JSON file.' % (len(converted), json_file))
+    print('Done. Wrote %d items to \'%s\' JSON file.\n' % (len(converted), args.output_file))
+
+
+def search(args, items):
+    print('Searching for \'%s\'...\n' % args.filter)
+    for key, item in items.items():
+        if args.filter.lower() in key:
+            print(''.center(len(item.name), '-'))
+            print(item.name)
+            print(''.center(len(item.name), '-'))
+            print()
+            print(item.text)
+            print()
+
+
+def main():
+    print('==========================')
+    print('XML to RPG cards converter')
+    print('==========================\n')
+
+    # Set up the CLI arguments and parse them
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(help='Choose sub-command')
+
+    parser_convert = subparsers.add_parser('convert', help='Convert XML to JSON')
+    parser_convert.add_argument('xml_file', help='XML item input file')
+    parser_convert.add_argument('filter_file', help='Item text filter file')
+    parser_convert.add_argument('output_file', help='JSON item output file')
+    exclude_choices = [p for p in get_item_properties()]
+    [exclude_choices.remove(p) for p in ['name', 'type', 'text']]
+    parser_convert.add_argument('--exclude', choices=exclude_choices, nargs='*', help='Exclude properties')
+    parser_convert.set_defaults(func=convert)
+
+    parser_search = subparsers.add_parser('search', help='Search for items')
+    parser_search.add_argument('xml_file', help='XML input file')
+    parser_search.add_argument('filter', help='Item name filter')
+    parser_search.set_defaults(func=search)
+
+    args = parser.parse_args()
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        exit(0)
+
+    if not os.path.isfile(args.xml_file):
+        print('Error: \'%s\' is not a file.\n' % args.xml_file)
+        exit(1)
+
+    items = load_items(args.xml_file)
+    args.func(args, items)
 
 if __name__ == '__main__':
     main()
