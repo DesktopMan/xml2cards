@@ -34,7 +34,6 @@ If you want to exclude one or more properties you can do that with the --exclude
 * ac
 * dmg1
 * dmg2
-* dmgType
 * modifier
 * property
 * range

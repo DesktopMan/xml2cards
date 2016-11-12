@@ -102,6 +102,28 @@ def load_items(filename):
 
         items[item.name.lower()] = item
 
+        # Add bonus damage to damage roll
+        for m in item.modifier.split('\n'):
+            if m.startswith('melee damage') or m.startswith('ranged damage') or m.startswith('weapon damage'):
+                damage = m[m.find('+'):]
+                if item.dmg1:
+                    item.dmg1 += ' %s' % damage
+
+                if item.dmg2:
+                    item.dmg2 += ' %s' % damage
+
+                item.modifier = item.modifier.replace(m, '')
+
+        # Add damage type to damage roll
+        if item.dmgType:
+            if item.dmg1:
+                item.dmg1 += ' %s' % item.dmgType
+
+            if item.dmg2:
+                item.dmg2 += ' %s' % item.dmgType
+
+        item.dmgType = ''
+
     return items
 
 
@@ -130,15 +152,16 @@ def convert_item(item, dic, exclude_properties):
         prop_value = getattr(item, prop_name)
 
         # Skip properties already displayed elsewhere and excluded properties
-        ignored_properties = ['name', 'type', 'text', 'rarity']
+        ignored_properties = ['name', 'type', 'text', 'rarity', 'dmgType']
         if exclude_properties:
             ignored_properties.extend(exclude_properties)
         if prop_name in ignored_properties or prop_value in ['', '0', 0]:
             continue
 
         for v in prop_value.split('\n'):
-            result['contents'].append('property | %s | %s' % (prop_display, v))
-            properties_added += 1
+            if v:
+                result['contents'].append('property | %s | %s' % (prop_display, v))
+                properties_added += 1
 
     if properties_added > 0:
         result['contents'].append('rule')
@@ -241,7 +264,7 @@ def main():
     parser_convert.add_argument('filter_file', help='Item text filter file')
     parser_convert.add_argument('output_file', help='JSON item output file')
     exclude_choices = [p for p in get_item_properties()]
-    [exclude_choices.remove(p) for p in ['name', 'type', 'text']]
+    [exclude_choices.remove(p) for p in ['name', 'type', 'text', 'rarity', 'dmgType']]
     parser_convert.add_argument('--exclude', choices=exclude_choices, nargs='*', help='Exclude properties')
     parser_convert.set_defaults(func=convert)
 
