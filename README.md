@@ -1,7 +1,8 @@
 # About
 
 xml2cards converts item descriptions in the [DnD App Files](https://github.com/ceryliae/DnDAppFiles) format to the JSON
-format required by [RPG cards](https://crobi.github.io/rpg-cards/generator/generate.html).
+format required by [RPG cards](https://desktopman.github.io/rpg-cards/generator/generate.html). Note that I've made some
+changes to RPG cards to support text justify and center.
 
 The script automatically maps item types to card colors and icons and adds all the properties for you. 
 
@@ -16,7 +17,7 @@ The Python module *pyphen* is used for hyphenation.
    ```
    ./xml2cards.py items.xml filter.txt output.json
    ```
-3. Open the JSON file in RPG cards and edit as you see fit
+3. Load the JSON file in RPG cards and edit as you see fit
 
 # Example filter.txt
 
