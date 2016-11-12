@@ -33,21 +33,21 @@ def get_type_info(item_type):
 
 def get_item_properties():
     return {
-        'name': 'name',
-        'type': 'type',
-        'weight': 'weight',
-        'ac': 'armor class',
-        'stealth': 'stealth',
-        'dmg1': 'damage',
-        'dmg2': 'damage',
-        'dmgType': 'type',
-        'property': 'property',
-        'range': 'range',
-        'text': 'text',
-        'modifier': 'modifier',
-        'roll': 'roll',
-        'value': 'value',
-        'rarity': 'rarity'
+        'name': 'Name',
+        'type': 'Type',
+        'weight': 'Weight',
+        'ac': 'Armor Class',
+        'stealth': 'Stealth',
+        'dmg1': 'Damage',
+        'dmg2': 'Damage',
+        'dmgType': 'Type',
+        'property': 'Property',
+        'range': 'Range',
+        'text': 'Text',
+        'modifier': 'Modifier',
+        'roll': 'Roll',
+        'value': 'Value',
+        'rarity': 'Rarity'
     }
 
 
