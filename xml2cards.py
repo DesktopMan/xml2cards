@@ -36,17 +36,18 @@ def get_item_properties():
         'name': 'name',
         'type': 'type',
         'weight': 'weight',
-        'ac': 'ac',
+        'ac': 'armor class',
         'stealth': 'stealth',
-        'dmg1': 'dmg',
-        'dmg2': 'dmg',
+        'dmg1': 'damage',
+        'dmg2': 'damage',
         'dmgType': 'type',
-        'property': 'prop',
+        'property': 'property',
         'range': 'range',
         'text': 'text',
-        'modifier': 'mod',
+        'modifier': 'modifier',
         'roll': 'roll',
-        'value': 'value'
+        'value': 'value',
+        'rarity': 'rarity'
     }
 
 
@@ -84,7 +85,6 @@ def convert_item(item, dic):
     # Basic info
     if item.type == '$':
         result['title'] = item.name[item.name.find(' - ') + 3:]
-        item.value = item.name[0:item.name.find(' - ')]
     else:
         result['title'] = item.name
 
@@ -94,7 +94,10 @@ def convert_item(item, dic):
 
     # Properties
     result['contents'] = []
-    result['contents'].append('subtitle | %s' % type_info['name'])
+    if item.rarity == '':
+        result['contents'].append('subtitle | %s' % type_info['name'])
+    else:
+        result['contents'].append('subtitle | %s (%s)' % (type_info['name'], item.rarity))
 
     result['contents'].append('rule')
 
@@ -103,7 +106,8 @@ def convert_item(item, dic):
     for prop_name, prop_display in get_item_properties().items():
         prop_value = getattr(item, prop_name)
 
-        if prop_name == 'name' or prop_name == 'type' or prop_name == 'text' or prop_value == '' or prop_value == 0:
+        # Skip properties already displayed elsewhere
+        if prop_name in ['name', 'type', 'text', 'rarity'] or prop_value in ['', '0', 0]:
             continue
 
         for v in prop_value.split('\n'):
