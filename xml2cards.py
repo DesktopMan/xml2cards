@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 import sys
-from xml.etree import ElementTree as et
+from xml.etree import ElementTree
 import json
 import pyphen
 
 
-def get_type_info(itemType):
+def get_type_info(item_type):
     info = {
         '$': {'name': 'Treasure', 'icon': 'locked-chest', 'color': 'darkgoldenrod'},
         'P': {'name': 'Potion', 'icon': 'drink-me', 'color': 'maroon'},
@@ -25,8 +25,8 @@ def get_type_info(itemType):
         'SC': {'name': 'Spell Scroll', 'icon': 'tied-scroll', 'color': 'indigo'},
     }
 
-    if itemType in info:
-        return info[itemType]
+    if item_type in info:
+        return info[item_type]
 
     return {'name': 'Unknown type', 'icon': 'cross-mark', 'color': 'black'}
 
@@ -59,18 +59,18 @@ class Item:
 def load_items(filename):
     items = []
 
-    for e in et.parse(filename).getroot():
+    for e in ElementTree.parse(filename).getroot():
         if e.tag != 'item':
             continue
 
         item = Item()
-        for propName in get_item_properties():
+        for prop_name in get_item_properties():
             # Convert tags to newlines
-            for t in e.findall(propName):
+            for t in e.findall(prop_name):
                 if not t.text:
                     t.text = ""
 
-            setattr(item, propName, '\n'.join([t.text for t in e.findall(propName)]))
+            setattr(item, prop_name, '\n'.join([t.text for t in e.findall(prop_name)]))
 
         items.append(item)
 
@@ -100,14 +100,14 @@ def convert_item(item, dic):
 
     properties_added = 0
 
-    for propName, propDisplay in get_item_properties().items():
-        propValue = getattr(item, propName)
+    for prop_name, prop_display in get_item_properties().items():
+        prop_value = getattr(item, prop_name)
 
-        if propName == 'name' or propName == 'type' or propName == 'text' or propValue == '' or propValue == 0:
+        if prop_name == 'name' or prop_name == 'type' or prop_name == 'text' or prop_value == '' or prop_value == 0:
             continue
 
-        for v in propValue.split('\n'):
-            result['contents'].append('property | %s | %s' % (propDisplay, v))
+        for v in prop_value.split('\n'):
+            result['contents'].append('property | %s | %s' % (prop_display, v))
             properties_added += 1
 
     if properties_added > 0:
@@ -135,12 +135,12 @@ def convert_item(item, dic):
     return result
 
 
-def convert_items(items, filter):
+def convert_items(items, name_filter):
     dic = pyphen.Pyphen(lang='en_US')
     result = []
 
     for item in items:
-        count = filter.count(item.name)
+        count = name_filter.count(item.name)
 
         if count == 0:
             continue
@@ -154,25 +154,32 @@ def convert_items(items, filter):
         found.append(item['title'])
 
     missing = []
-    for item in filter:
+    for item in name_filter:
         if item not in found and item != '' and not item.startswith('#'):
             missing.append(item)
 
     return result, missing
 
-if __name__ == '__main__':
-    filename = sys.argv[1]
 
-    filter = sys.argv[2:]
-    filter.extend(sys.stdin.read().splitlines())
+def main():
+    xml_file = sys.argv[1]
+    filter_file = sys.argv[2]
+    json_file = sys.argv[3]
 
-    items = load_items('items.xml')
-    converted, missing = convert_items(items, filter)
+    name_filter = []
+    with open(filter_file, 'r') as f:
+        name_filter.extend(f.read().splitlines())
+
+    items = load_items(xml_file)
+    converted, missing = convert_items(items, name_filter)
 
     if len(missing) > 0:
         print('Missing items:\n%s' % '\n'.join(missing))
 
     print('Done.')
 
-    with open(filename, 'w') as f:
+    with open(json_file, 'w') as f:
         f.write(json.dumps(converted, indent=2))
+
+if __name__ == '__main__':
+    main()
