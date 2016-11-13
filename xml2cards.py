@@ -34,7 +34,26 @@ def get_type_info(item_type):
     return {'name': 'Unknown type', 'icon': 'cross-mark', 'color': 'black'}
 
 
-def get_item_properties():
+def get_item_properties(sortedItems=False):
+
+    ordDict = ([
+        ('name', 'Name'),
+        ('modifier', 'Modifier'),
+        ('dmg1', 'Damage'),
+        ('dmg2', 'Damage'),
+        ('type', 'Type'),
+        ('dmgType', 'Type'),
+        ('ac', 'Armor Class'),
+        ('stealth', 'Stealth'),
+        ('property', 'Properties'),
+        ('range', 'Range'),
+        ('roll', 'Roll'),
+        ('value', 'Value'),
+        ('rarity', 'Rarity'),
+        ('weight', 'Weight'),
+        ('text', 'Text')])
+    if sortedItems:
+        return ordDict
     return {
         'name': 'Name',
         'type': 'Type',
@@ -102,6 +121,15 @@ def load_items(filename):
 
         items[item.name.lower()] = item
 
+        # Sett stealth YES to Disadvantage
+        if item.stealth == 'YES':
+            item.stealth = 'Disadvantage'
+
+        # Add two handed dmg
+        if item.dmg1 and item.dmg2 and 'V' in item.property:
+            item.dmg1 = 'One-Handed ' +item.dmg1
+            item.dmg2 = 'Two-Handed ' +item.dmg2
+
         # Add bonus damage to damage roll
         for m in item.modifier.split('\n'):
             if m.startswith('melee damage') or m.startswith('ranged damage') or m.startswith('weapon damage'):
@@ -148,9 +176,8 @@ def convert_item(item, dic, exclude_properties):
 
     properties_added = 0
 
-    for prop_name, prop_display in get_item_properties().items():
+    for prop_name, prop_display in get_item_properties(True):
         prop_value = getattr(item, prop_name)
-
         # Skip properties already displayed elsewhere and excluded properties
         ignored_properties = ['name', 'type', 'text', 'rarity', 'dmgType']
         if exclude_properties:
