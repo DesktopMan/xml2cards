@@ -1,8 +1,7 @@
 # About
 
 xml2cards converts item descriptions in the [DnD App Files](https://github.com/ceryliae/DnDAppFiles) format to the JSON
-format required by [RPG cards](https://desktopman.github.io/rpg-cards/generator/generate.html). Note that I've made some
-changes to RPG cards to support text justify and center.
+format required by [RPG cards](https://crobi.github.io/rpg-cards/generator/generate.html).
 
 The script automatically maps item types to card colors and icons and adds all the properties for you. 
 
